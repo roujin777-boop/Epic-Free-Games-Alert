@@ -22,6 +22,12 @@ def main():
     
     options = load_options()
 
+# Add ITO
+    env_url = os.getenv("DISCORD_WEBHOOK_URL")
+    if env_url:
+    options["discord_webhook_url"] = env_url
+#########
+    
     discord_webhook_url = options["discord_webhook_url"]
     country = options["country"]
     epic_games_store_api_url = f"https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale={country.lower()}&country={country.upper()}&allowCountries={country.upper()}"
@@ -66,3 +72,4 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
