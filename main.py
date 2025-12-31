@@ -2,6 +2,7 @@ import json
 import requests
 import json
 import time
+import os
 
 # This Version is a Lite one , no gui ...
 # Script by Elxss ;)
@@ -23,9 +24,9 @@ def main():
     options = load_options()
 
 # Add ITO
-    env_url = os.getenv("DISCORD_WEBHOOK_URL")
+    env_url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
     if env_url:
-    options["discord_webhook_url"] = env_url
+        options["discord_webhook_url"] = env_url
 #########
     
     discord_webhook_url = options["discord_webhook_url"]
@@ -65,6 +66,7 @@ def main():
             model['embeds'][0]['url'] = model['embeds'][0]['url']+country.lower()+'/p/'+game['title'].replace(":","").replace("-","").replace(' ','-').replace("'",'').lower()
             model['embeds'][0]['image']['url'] = game['keyImages'][1]['url']
             requests.post(discord_webhook_url, json=model)
+            print("Discord webhook status:", r.status_code, r.text[:200])
     
     with open(history_filename, "w") as f:
         f.write("\n".join(game_names))
@@ -72,4 +74,5 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
 
