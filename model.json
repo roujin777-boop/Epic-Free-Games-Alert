@@ -1,5 +1,5 @@
 {
-    "content": "New Free Game Available On The Epic Games Store !",
+    "content": "みんな！EPICでまた無料ゲームが出たよ！",
     "embeds": [
         {
         "title": "",
@@ -11,7 +11,8 @@
           }
         }
     ],
-    "username": "Epic Games Free Game",
+    "username": "ブルベリEpic無料配布通知くん",
     "avatar_url": "https://elxss.github.io/src/img/logo.png",
     "attachments": []
 }
+
