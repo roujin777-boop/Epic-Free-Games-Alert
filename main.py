@@ -4,6 +4,29 @@ import json
 import time
 import os
 
+def pick_epic_slug(game: dict) -> str | None:
+    # 1) productSlug / urlSlug があれば最優先
+    for key in ("productSlug", "urlSlug"):
+        v = game.get(key)
+        if isinstance(v, str) and v.strip():
+            return v.strip().replace("/home", "")
+
+    # 2) offerMappings の pageSlug がある場合
+    mappings = game.get("offerMappings") or []
+    if isinstance(mappings, list) and mappings:
+        page_slug = mappings[0].get("pageSlug")
+        if isinstance(page_slug, str) and page_slug.strip():
+            return page_slug.strip().replace("/home", "")
+
+    return None
+
+
+def build_epic_url(slug: str | None, locale: str = "ja") -> str:
+    if not slug:
+        return f"https://store.epicgames.com/{locale}/"
+    return f"https://store.epicgames.com/{locale}/p/{slug}"
+
+
 
 from datetime import datetime, timezone
 
@@ -105,13 +128,10 @@ def main():
                 model['embeds'][0]['title'] = game.get('title', '')
                 model['embeds'][0]['description'] = game.get('description') or game.get('shortDescription') or ""
     
-                # URL（この作り方は精度が低いので、slugが取れるなら後で改善推奨）
-                model['embeds'][0]['url'] = (
-                    model['embeds'][0]['url']
-                    + country.lower()
-                    + '/p/'
-                    + game.get('title', '').replace(":","").replace("-","").replace(' ','-').replace("'",'').lower()
-                )
+                # URL
+                slug = pick_epic_slug(game)
+                model['embeds'][0]['url'] = build_epic_url(slug, locale=locale)
+
     
                 # 画像：添字固定は危険なので、取れたものを使う
                 key_images = game.get('keyImages') or []
@@ -132,6 +152,7 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
 
 
 
