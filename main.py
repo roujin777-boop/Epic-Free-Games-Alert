@@ -21,10 +21,24 @@ def pick_epic_slug(game: dict) -> str | None:
     return None
 
 
-def build_epic_url(slug: str | None, locale: str = "ja") -> str:
+def resolve_epic_store_url(slug: str | None, locale: str = "ja") -> str:
     if not slug:
-        return f"https://store.epicgames.com/{locale}/"
-    return f"https://store.epicgames.com/{locale}/p/{slug}"
+        return f"https://store.epicgames.com/{locale}/free-games"
+
+    candidates = [
+        f"https://store.epicgames.com/{locale}/p/{slug}",
+        f"https://store.epicgames.com/{locale}/bundles/{slug}",
+    ]
+
+    for url in candidates:
+        try:
+            r = requests.head(url, allow_redirects=True, timeout=10)
+            if 200 <= r.status_code < 400:
+                return url
+        except requests.RequestException:
+            pass
+
+    return f"https://store.epicgames.com/{locale}/free-games"
 
 
 
@@ -112,38 +126,38 @@ def main():
         previous_game_names = []
         print("[ First Boot Up ] Have a good time ;) , leave a star on the repo and subscribe to the youtube channel :) (https://www.youtube.com/@Elxss)")
     
+        # free_now_games のうち、履歴に無いものだけを新規として抽出
     for game in free_now_games:
         if game['title'] not in previous_game_names:
             new_games.append(game)
 
+    # 新規があれば投稿（★for の外に出すのが重要）
+    if new_games:
+        for game in new_games:
+            print(f"[!] New Game: {game['title']} !")
 
-        if new_games:
-            for game in new_games:
-                print(f"[!] New Game: {game['title']} !")
-    
-                # 毎回テンプレを読み直して、前のゲームの内容が混ざらないようにする
-                model = load_model()
-    
-                # タイトル・説明（日本語が入ってくる前提）
-                model['embeds'][0]['title'] = game.get('title', '')
-                model['embeds'][0]['description'] = game.get('description') or game.get('shortDescription') or ""
-    
-                # URL
-                slug = pick_epic_slug(game)
-                model['embeds'][0]['url'] = build_epic_url(slug, locale=locale)
+            # 毎回テンプレを読み直して、前のゲームの内容が混ざらないようにする
+            model = load_model()
 
-    
-                # 画像：添字固定は危険なので、取れたものを使う
-                key_images = game.get('keyImages') or []
-                if key_images and isinstance(key_images, list) and isinstance(key_images[0], dict):
-                    model['embeds'][0]['image']['url'] = key_images[0].get('url', "")
-                else:
-                    # 画像が無い場合は空に（model.json次第でimage自体が無ければこの行は不要）
-                    if 'image' in model['embeds'][0]:
-                        model['embeds'][0]['image']['url'] = ""
-    
-                r = requests.post(discord_webhook_url, json=model)
-                print("Discord webhook status:", r.status_code, (r.text or "")[:200])
+            # タイトル・説明（日本語化済みのlocale=jaの結果を使う）
+            model['embeds'][0]['title'] = game.get('title', '')
+            model['embeds'][0]['description'] = game.get('description') or game.get('shortDescription') or ""
+
+            # URL（/p と /bundles を自動判定）
+            slug = pick_epic_slug(game)
+            model['embeds'][0]['url'] = resolve_epic_store_url(slug, locale=locale)
+
+            # 画像：添字固定をやめて、取れたものを使う
+            key_images = game.get('keyImages') or []
+            if key_images and isinstance(key_images, list) and isinstance(key_images[0], dict):
+                model['embeds'][0]['image']['url'] = key_images[0].get('url', "")
+            else:
+                if 'image' in model['embeds'][0]:
+                    model['embeds'][0]['image']['url'] = ""
+
+            r = requests.post(discord_webhook_url, json=model)
+            print("Discord webhook status:", r.status_code, (r.text or "")[:200])
+
 
     
     with open(history_filename, "w") as f:
@@ -152,6 +166,7 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
 
 
 
