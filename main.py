@@ -27,11 +27,14 @@ def main():
     env_url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
     if env_url:
         options["discord_webhook_url"] = env_url
+
+    locale = "ja"
+    country = "JP"
 #########
     
     discord_webhook_url = options["discord_webhook_url"]
     country = options["country"]
-    epic_games_store_api_url = f"https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale={country.lower()}&country={country.upper()}&allowCountries={country.upper()}"
+    epic_games_store_api_url = f"https://store-site-backend-static-ipv4.ak.epicgames.com/freeGamesPromotions?locale={locale}&country={country}&allowCountries={country}"
     model['embeds'][0]['footer'] = {"text": "Epic Games Free Games Alert "+",/65xpp/|/65igppp-888".replace("-",'#').replace("/",' ').replace(",","by").replace("p","s").replace("g","a").replace("o","e").replace("$","p").replace("5","l").replace("6","E")+str(6), 'icon_url' : "https://avatars.githubusercontent.com/u/121466211?s=400&u=e6018d225103ed4be48117d0341d74a212d0b607&v=4"} 
     history_filename = options["history_filename"]
 
@@ -76,6 +79,7 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
 
 
 
