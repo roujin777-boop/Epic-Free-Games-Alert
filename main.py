@@ -95,35 +95,35 @@ def main():
 
 
         if new_games:
-        for game in new_games:
-            print(f"[!] New Game: {game['title']} !")
-
-            # 毎回テンプレを読み直して、前のゲームの内容が混ざらないようにする
-            model = load_model()
-
-            # タイトル・説明（日本語が入ってくる前提）
-            model['embeds'][0]['title'] = game.get('title', '')
-            model['embeds'][0]['description'] = game.get('description') or game.get('shortDescription') or ""
-
-            # URL（この作り方は精度が低いので、slugが取れるなら後で改善推奨）
-            model['embeds'][0]['url'] = (
-                model['embeds'][0]['url']
-                + country.lower()
-                + '/p/'
-                + game.get('title', '').replace(":","").replace("-","").replace(' ','-').replace("'",'').lower()
-            )
-
-            # 画像：添字固定は危険なので、取れたものを使う
-            key_images = game.get('keyImages') or []
-            if key_images and isinstance(key_images, list) and isinstance(key_images[0], dict):
-                model['embeds'][0]['image']['url'] = key_images[0].get('url', "")
-            else:
-                # 画像が無い場合は空に（model.json次第でimage自体が無ければこの行は不要）
-                if 'image' in model['embeds'][0]:
-                    model['embeds'][0]['image']['url'] = ""
-
-            r = requests.post(discord_webhook_url, json=model)
-            print("Discord webhook status:", r.status_code, (r.text or "")[:200])
+            for game in new_games:
+                print(f"[!] New Game: {game['title']} !")
+    
+                # 毎回テンプレを読み直して、前のゲームの内容が混ざらないようにする
+                model = load_model()
+    
+                # タイトル・説明（日本語が入ってくる前提）
+                model['embeds'][0]['title'] = game.get('title', '')
+                model['embeds'][0]['description'] = game.get('description') or game.get('shortDescription') or ""
+    
+                # URL（この作り方は精度が低いので、slugが取れるなら後で改善推奨）
+                model['embeds'][0]['url'] = (
+                    model['embeds'][0]['url']
+                    + country.lower()
+                    + '/p/'
+                    + game.get('title', '').replace(":","").replace("-","").replace(' ','-').replace("'",'').lower()
+                )
+    
+                # 画像：添字固定は危険なので、取れたものを使う
+                key_images = game.get('keyImages') or []
+                if key_images and isinstance(key_images, list) and isinstance(key_images[0], dict):
+                    model['embeds'][0]['image']['url'] = key_images[0].get('url', "")
+                else:
+                    # 画像が無い場合は空に（model.json次第でimage自体が無ければこの行は不要）
+                    if 'image' in model['embeds'][0]:
+                        model['embeds'][0]['image']['url'] = ""
+    
+                r = requests.post(discord_webhook_url, json=model)
+                print("Discord webhook status:", r.status_code, (r.text or "")[:200])
 
     
     with open(history_filename, "w") as f:
@@ -132,6 +132,7 @@ def main():
 if __name__ == "__main__":
     print("Epic Game Free Game Alert By Elxss Version 1.0")
     main()
+
 
 
 
